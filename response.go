@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/tidwall/gjson"
 	"io"
 	"log"
@@ -61,7 +62,14 @@ func (c *Response) DecodePrintError(v any) {
 func (c *Response) Json() gjson.Result {
 	return gjson.Parse(c.String())
 }
-
+func (c *Response) Document() *goquery.Document {
+	doc, ok := goquery.NewDocumentFromReader(c.Body)
+	if ok != nil {
+		log.Printf("goquery.NewDocumentFromReader error: %v", ok)
+		return nil
+	}
+	return doc
+}
 func (c *Response) GetCookie() []*http.Cookie {
 	return c.Resp.Cookies()
 }
