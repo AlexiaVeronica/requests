@@ -3,15 +3,16 @@ package client
 import (
 	"net/http"
 	"net/url"
+	"time"
 )
 
-func NewClient() *Client {
+func NewClient(timeout int) *Client {
 	client := &Client{
+		jsonData:    nil,
 		Cookie:      &http.Cookie{},
 		httpHeaders: http.Header{},
-		httpClient:  http.Client{Transport: nil},
 		dataForm:    &url.Values{},
-		jsonData:    nil,
+		httpClient:  http.Client{Transport: nil, Timeout: time.Second * time.Duration(timeout)},
 	}
 	return client
 }
