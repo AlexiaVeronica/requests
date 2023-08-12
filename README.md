@@ -2,7 +2,7 @@
 
 ## Package client
 
-The `client` package provides a set of interfaces and structs for making HTTP requests and handling responses.
+The `requests` package provides a set of interfaces and structs for making HTTP requests and handling responses.
 
 ### Structs
 
