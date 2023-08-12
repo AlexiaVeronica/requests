@@ -25,7 +25,8 @@ type Client struct {
 	method      string
 	urlPoint    string
 	urlSite     string
-	DataForm    *url.Values
+	jsonData    io.Reader
+	dataForm    *url.Values
 	httpHeaders http.Header
 	httpRequest *http.Request
 	httpClient  http.Client
@@ -48,7 +49,7 @@ type HttpResultInterface interface {
 	GetStatus() string
 }
 type HttpClientInterface interface {
-	Query(q map[string]interface{}) *Client
+	Query(q interface{}) *Client
 	QueryFunc(f func(c *Client)) *Client
 	Headers(h map[string]interface{}) *Client
 	HeadersFunc(f func(c *Client)) *Client

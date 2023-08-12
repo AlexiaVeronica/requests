@@ -1,9 +1,12 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
@@ -21,9 +24,10 @@ func (c *Client) SetProxy(proxy Proxy) *Client {
 func (c *Client) Request() *Client {
 	var err error
 	if c.method == http.MethodGet {
-		c.httpRequest, err = http.NewRequest(http.MethodGet, fmt.Sprintf("%s?%s", c.GetUrl(), c.DataForm.Encode()), nil)
+		c.httpRequest, err = http.NewRequest(http.MethodGet, c.GetUrl(), nil)
+		c.httpRequest.URL.RawQuery = c.dataForm.Encode()
 	} else {
-		c.httpRequest, err = http.NewRequest(c.method, c.GetUrl(), strings.NewReader(c.DataForm.Encode()))
+		c.httpRequest, err = http.NewRequest(c.method, c.GetUrl(), c.jsonData)
 	}
 	c.httpRequest.Header = c.httpHeaders
 	c.httpRequest.AddCookie(c.Cookie)
@@ -69,16 +73,44 @@ func (c *Client) SetCookie(cookie map[string]string) *Client {
 	return c
 }
 
-func (c *Client) Query(q map[string]interface{}) *Client {
-	if q != nil {
-		for k, value := range q {
-			c.DataForm.Set(k, fmt.Sprintf("%v", value))
+func (c *Client) Query(data interface{}) *Client {
+	switch data.(type) {
+	case url.Values:
+		c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
+		for k, v := range data.(url.Values) {
+			c.dataForm.Set(k, v[0])
+		}
+		c.jsonData = strings.NewReader(c.dataForm.Encode())
+	case map[string]interface{}:
+		c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
+		for k, v := range data.(map[string]interface{}) {
+			c.dataForm.Set(k, fmt.Sprintf("%v", v))
+		}
+		c.jsonData = strings.NewReader(c.dataForm.Encode())
+	case string:
+		jsonData := data.(string)
+		if jsonData[:1] == "{" && jsonData[len(jsonData)-1:] == "}" {
+			c.jsonData = strings.NewReader(jsonData)
+			c.Headers(map[string]interface{}{"Content-Type": "application/json"})
+		}
+	default:
+		if reflect.ValueOf(data).Kind() == reflect.Struct {
+			if jsonData, err := json.Marshal(data); err != nil {
+				c.errorArray = append(c.errorArray, err)
+			} else {
+				c.jsonData = bytes.NewReader(jsonData)
+				c.Headers(map[string]interface{}{"Content-Type": "application/json"})
+			}
 		}
 	}
 	return c
 }
-func (c *Client) QueryFunc(f func(c *Client)) *Client {
-	f(c)
+func (c *Client) QueryFunc(f func(c *Client) interface{}) *Client {
+	if data := f(c); data != nil {
+		c.Query(data)
+	} else {
+		c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "QueryFunc return nil"))
+	}
 	return c
 }
 
@@ -118,17 +150,14 @@ func (c *Client) GetUrl() string {
 	return c.urlSite + c.urlPoint
 }
 func (c *Client) PostMethod() *Client {
-	c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
 	return c.Method(http.MethodPost)
 }
 
 func (c *Client) GetMethod() *Client {
-	c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
 	return c.Method(http.MethodGet)
 }
 
 func (c *Client) PutMethod() *Client {
-	c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
 	return c.Method(http.MethodPut)
 }
 
