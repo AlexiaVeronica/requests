@@ -1,4 +1,4 @@
-module github.com/VeronicaAlexia/requests
+module github.com/VeronicaAlexia/requestclient
 
 go 1.20
 
