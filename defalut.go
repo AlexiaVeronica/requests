@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/PuerkitoBio/goquery"
 	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
@@ -31,7 +32,7 @@ type Client struct {
 	errorArray  []error
 	Cookie      *http.Cookie
 }
- 
+
 type HttpResultInterface interface {
 	SetDecodeFunc(func(f *Response) error) *Response
 	Bytes() []byte
@@ -43,6 +44,7 @@ type HttpResultInterface interface {
 	GetCookie() []*http.Cookie
 	GetHeader() http.Header
 	GetStatusCode() int
+	Document() *goquery.Document
 	GetStatus() string
 }
 type HttpClientInterface interface {
