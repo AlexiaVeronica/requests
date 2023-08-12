@@ -139,9 +139,11 @@ func (c *Client) UrlPoint(urlPoint string) *Client {
 	return c
 }
 func (c *Client) GetUrl() string {
-	if c.urlSite[len(c.urlSite)-1:] != "/" && c.urlPoint[:1] != "/" {
-		c.errorArray = append(c.errorArray, fmt.Errorf("urlSite error: %s%s is not support", c.urlSite, c.urlPoint))
-		c.urlPoint = "/" + c.urlPoint
+	if strings.TrimSpace(c.urlPoint) != "" {
+		if c.urlSite[len(c.urlSite)-1:] != "/" && c.urlPoint[:1] != "/" {
+			c.errorArray = append(c.errorArray, fmt.Errorf("urlSite error: %s%s is not support", c.urlSite, c.urlPoint))
+			c.urlPoint = "/" + c.urlPoint
+		}
 	}
 	return c.urlSite + c.urlPoint
 }
