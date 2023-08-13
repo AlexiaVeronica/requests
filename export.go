@@ -6,25 +6,31 @@ import (
 	"time"
 )
 
-func NewClient(timeout int) *Client {
+var DefaultProxyInfo *Proxy
+var DefaultTimeout time.Duration = 30
+
+func NewClient() *Client {
 	client := &Client{
 		jsonData:    nil,
 		Cookie:      &http.Cookie{},
 		httpHeaders: http.Header{},
 		dataForm:    &url.Values{},
-		httpClient:  http.Client{Transport: nil, Timeout: time.Second * time.Duration(timeout)},
+		httpClient:  http.Client{Transport: nil, Timeout: time.Second * DefaultTimeout},
+	}
+	if DefaultProxyInfo != nil {
+		return client.SetProxy(DefaultProxyInfo)
 	}
 	return client
 }
 
 func Get(pointPath string, params any) HttpResultInterface {
-	return NewClient(30).GetMethod().UrlSite(pointPath).Query(params).NewRequest()
+	return NewClient().GetMethod().UrlSite(pointPath).Query(params).NewRequest()
 }
 
 func Post(pointPath string, params any) HttpResultInterface {
-	return NewClient(30).PostMethod().UrlSite(pointPath).Query(params).NewRequest()
+	return NewClient().PostMethod().UrlSite(pointPath).Query(params).NewRequest()
 }
 
 func Put(pointPath string, params any) HttpResultInterface {
-	return NewClient(30).PutMethod().UrlSite(pointPath).Query(params).NewRequest()
+	return NewClient().PutMethod().UrlSite(pointPath).Query(params).NewRequest()
 }

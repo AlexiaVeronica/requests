@@ -17,6 +17,13 @@ func (c *Client) SetProxy(proxy *Proxy) *Client {
 		c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "proxy is nil"))
 		return c
 	}
+	value := reflect.ValueOf(proxy)
+	for i := 0; i < value.NumField(); i++ {
+		if value.Field(i).String() == "" {
+			c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "proxy field is empty"))
+			return c
+		}
+	}
 	proxyURL, err := url.Parse(fmt.Sprintf("http://%s:%s", proxy.Ip, proxy.Port))
 	if err != nil {
 		c.errorArray = append(c.errorArray, err)
