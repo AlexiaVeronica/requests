@@ -80,23 +80,22 @@ func (c *Client) SetCookie(cookie map[string]string) *Client {
 }
 
 func (c *Client) Query(data interface{}) *Client {
-	switch data.(type) {
+	switch dataAny := data.(type) {
 	case url.Values:
 		c.Header("Content-Type", ContentTypeForm)
-		for k, v := range data.(url.Values) {
+		for k, v := range dataAny {
 			c.dataForm.Set(k, v[0])
 		}
 		c.jsonData = strings.NewReader(c.dataForm.Encode())
 	case map[string]interface{}:
 		c.Header("Content-Type", ContentTypeForm)
-		for k, v := range data.(map[string]interface{}) {
+		for k, v := range dataAny {
 			c.dataForm.Set(k, fmt.Sprintf("%v", v))
 		}
 		c.jsonData = strings.NewReader(c.dataForm.Encode())
 	case string:
-		jsonData := data.(string)
-		if jsonData[:1] == "{" && jsonData[len(jsonData)-1:] == "}" {
-			c.jsonData = strings.NewReader(jsonData)
+		if dataAny[:1] == "{" && dataAny[len(dataAny)-1:] == "}" {
+			c.jsonData = strings.NewReader(dataAny)
 			c.Header("Content-Type", ContentTypeJson)
 		}
 	default:
