@@ -111,6 +111,15 @@ func (c *Client) SetCookie(cookie map[string]string) *Client {
 	return c
 }
 
+func (c *Client) NewUpdateFile(readFile []byte) HttpResultInterface {
+	res, err := http.Post(c.GetUrl(), "multipart/form-data", bytes.NewReader(readFile))
+	if err != nil {
+		c.errorArray = append(c.errorArray, err)
+	} else {
+		return &Response{Body: res.Body, Resp: res}
+	}
+	return HttpResultInterface(nil)
+}
 func (c *Client) Query(data interface{}) *Client {
 	switch dataAny := data.(type) {
 	case url.Values:

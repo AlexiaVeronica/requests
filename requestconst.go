@@ -73,4 +73,5 @@ type HttpClientInterface interface {
 	Request() *Client
 	Send() HttpResultInterface
 	NewRequest() HttpResultInterface
+	NewUpdateFile(readFile []byte) HttpResultInterface
 }
