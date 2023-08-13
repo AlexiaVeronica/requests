@@ -45,14 +45,6 @@ func (c *Client) Request() *Client {
 }
 
 func (c *Client) Send() HttpResultInterface {
-	defer func() {
-		if recover() != nil {
-			c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "send request failed"))
-			for _, errorInfo := range c.errorArray {
-				fmt.Printf("error: %s\n", errorInfo.Error())
-			}
-		}
-	}()
 	resp, err := c.httpClient.Do(c.httpRequest)
 	if err != nil {
 		c.errorArray = append(c.errorArray, err)
@@ -62,6 +54,13 @@ func (c *Client) Send() HttpResultInterface {
 	return nil
 }
 func (c *Client) NewRequest() HttpResultInterface {
+	defer func() {
+		if recover() != nil {
+			for _, errorInfo := range c.errorArray {
+				fmt.Printf("error: %s\n", errorInfo.Error())
+			}
+		}
+	}()
 	res := c.Request().Send()
 	if res != nil {
 		return res
@@ -83,13 +82,13 @@ func (c *Client) SetCookie(cookie map[string]string) *Client {
 func (c *Client) Query(data interface{}) *Client {
 	switch data.(type) {
 	case url.Values:
-		c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
+		c.Header("Content-Type", ContentTypeForm)
 		for k, v := range data.(url.Values) {
 			c.dataForm.Set(k, v[0])
 		}
 		c.jsonData = strings.NewReader(c.dataForm.Encode())
 	case map[string]interface{}:
-		c.Headers(map[string]interface{}{"Content-Type": "application/x-www-form-urlencoded"})
+		c.Header("Content-Type", ContentTypeForm)
 		for k, v := range data.(map[string]interface{}) {
 			c.dataForm.Set(k, fmt.Sprintf("%v", v))
 		}
@@ -98,7 +97,7 @@ func (c *Client) Query(data interface{}) *Client {
 		jsonData := data.(string)
 		if jsonData[:1] == "{" && jsonData[len(jsonData)-1:] == "}" {
 			c.jsonData = strings.NewReader(jsonData)
-			c.Headers(map[string]interface{}{"Content-Type": "application/json"})
+			c.Header("Content-Type", ContentTypeJson)
 		}
 	default:
 		if reflect.ValueOf(data).Kind() == reflect.Struct {
@@ -106,12 +105,13 @@ func (c *Client) Query(data interface{}) *Client {
 				c.errorArray = append(c.errorArray, err)
 			} else {
 				c.jsonData = bytes.NewReader(jsonData)
-				c.Headers(map[string]interface{}{"Content-Type": "application/json"})
+				c.Header("Content-Type", ContentTypeJson)
 			}
 		}
 	}
 	return c
 }
+
 func (c *Client) QueryFunc(f func(c *Client) interface{}) *Client {
 	if data := f(c); data != nil {
 		c.Query(data)
@@ -121,11 +121,14 @@ func (c *Client) QueryFunc(f func(c *Client) interface{}) *Client {
 	return c
 }
 
-func (c *Client) Headers(h map[string]interface{}) *Client {
-	if h != nil {
-		for k, value := range h {
-			c.httpHeaders.Set(k, fmt.Sprintf("%v", value))
-		}
+func (c *Client) Header(k string, value interface{}) *Client {
+	c.httpHeaders.Set(k, fmt.Sprintf("%v", value))
+	return c
+}
+
+func (c *Client) Headers(m map[string]interface{}) *Client {
+	for k, v := range m {
+		c.Header(k, v)
 	}
 	return c
 }

@@ -8,6 +8,11 @@ import (
 	"net/url"
 )
 
+const (
+	ContentTypeJson = "application/json"
+	ContentTypeForm = "application/x-www-form-urlencoded"
+)
+
 type Proxy struct {
 	Ip       string
 	Port     string
@@ -48,13 +53,15 @@ type HttpResultInterface interface {
 	Document() *goquery.Document
 	GetStatus() string
 }
+
 type HttpClientInterface interface {
-	Query(q interface{}) *Client
-	QueryFunc(f func(c *Client)) *Client
-	Headers(h map[string]interface{}) *Client
+	Query(data interface{}) *Client
+	QueryFunc(f func(c *Client) interface{}) *Client
+	Headers(m map[string]interface{}) *Client
+	Header(k string, value interface{}) *Client
 	HeadersFunc(f func(c *Client)) *Client
 	SetCookie(cookie map[string]string) *Client
-	SetProxy(proxy Proxy) *Client
+	SetProxy(proxy *Proxy) *Client
 	Method(method string) *Client
 	GetMethod() *Client
 	PostMethod() *Client
