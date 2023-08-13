@@ -16,3 +16,15 @@ func NewClient(timeout int) *Client {
 	}
 	return client
 }
+
+func Get(pointPath string, params any) HttpResultInterface {
+	return NewClient(30).GetMethod().UrlSite(pointPath).Query(params).NewRequest()
+}
+
+func Post(pointPath string, params any) HttpResultInterface {
+	return NewClient(30).PostMethod().UrlSite(pointPath).Query(params).NewRequest()
+}
+
+func Put(pointPath string, params any) HttpResultInterface {
+	return NewClient(30).PutMethod().UrlSite(pointPath).Query(params).NewRequest()
+}

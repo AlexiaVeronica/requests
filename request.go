@@ -10,7 +10,11 @@ import (
 	"strings"
 )
 
-func (c *Client) SetProxy(proxy Proxy) *Client {
+func (c *Client) SetProxy(proxy *Proxy) *Client {
+	if proxy == nil {
+		c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "proxy is nil"))
+		return c
+	}
 	proxyURL, err := url.Parse(fmt.Sprintf("http://%s:%s", proxy.Ip, proxy.Port))
 	if err != nil {
 		c.errorArray = append(c.errorArray, err)
@@ -23,6 +27,9 @@ func (c *Client) SetProxy(proxy Proxy) *Client {
 
 func (c *Client) Request() *Client {
 	var err error
+	if c.method == "" {
+		c.method = http.MethodGet
+	}
 	if c.method == http.MethodGet {
 		c.httpRequest, err = http.NewRequest(http.MethodGet, c.GetUrl(), nil)
 		c.httpRequest.URL.RawQuery = c.dataForm.Encode()
