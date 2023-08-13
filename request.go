@@ -1,9 +1,11 @@
 package requests
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -52,6 +54,29 @@ func (c *Client) Send() HttpResultInterface {
 		return &Response{Body: resp.Body, Resp: resp}
 	}
 	return nil
+}
+
+func (c *Client) Stream() chan []byte {
+	streamChan := make(chan []byte)
+	resp, ok := c.httpClient.Do(c.httpRequest)
+	if ok != nil {
+		c.errorArray = append(c.errorArray, ok)
+	} else {
+		go func() {
+			reader := bufio.NewReader(resp.Body)
+			for {
+				line, err := reader.ReadBytes('\n')
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					c.errorArray = append(c.errorArray, err)
+				}
+				streamChan <- line
+			}
+		}()
+	}
+	return streamChan
 }
 func (c *Client) NewRequest() HttpResultInterface {
 	defer func() {
