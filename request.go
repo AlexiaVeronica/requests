@@ -17,7 +17,7 @@ func (c *Client) SetProxy(proxy *Proxy) *Client {
 		c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "proxy is nil"))
 		return c
 	}
-	value := reflect.ValueOf(proxy)
+	value := reflect.ValueOf(proxy).Elem()
 	for i := 0; i < value.NumField(); i++ {
 		if value.Field(i).String() == "" {
 			c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "proxy field is empty"))
