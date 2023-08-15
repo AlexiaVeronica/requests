@@ -3,7 +3,6 @@ package requests
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,7 +42,7 @@ func (c *Client) Request() *Client {
 		c.httpRequest, err = http.NewRequest(http.MethodGet, c.GetUrl(), nil)
 		c.httpRequest.URL.RawQuery = c.dataForm.Encode()
 	} else {
-		c.httpRequest, err = http.NewRequest(c.method, c.GetUrl(), c.jsonData)
+		c.httpRequest, err = http.NewRequest(c.method, c.GetUrl(), c.QueryResult())
 	}
 	c.httpRequest.Header = c.httpHeaders
 	c.httpRequest.AddCookie(c.Cookie)
@@ -119,46 +118,6 @@ func (c *Client) NewUpdateFile(readFile []byte) HttpResultInterface {
 		return &Response{Body: res.Body, Resp: res}
 	}
 	return HttpResultInterface(nil)
-}
-func (c *Client) Query(data interface{}) *Client {
-	switch dataAny := data.(type) {
-	case url.Values:
-		c.Header("Content-Type", ContentTypeForm)
-		for k, v := range dataAny {
-			c.dataForm.Set(k, v[0])
-		}
-		c.jsonData = strings.NewReader(c.dataForm.Encode())
-	case map[string]interface{}:
-		c.Header("Content-Type", ContentTypeForm)
-		for k, v := range dataAny {
-			c.dataForm.Set(k, fmt.Sprintf("%v", v))
-		}
-		c.jsonData = strings.NewReader(c.dataForm.Encode())
-	case string:
-		if dataAny[:1] == "{" && dataAny[len(dataAny)-1:] == "}" {
-			c.jsonData = strings.NewReader(dataAny)
-			c.Header("Content-Type", ContentTypeJson)
-		}
-	default:
-		if reflect.ValueOf(data).Kind() == reflect.Struct {
-			if jsonData, err := json.Marshal(data); err != nil {
-				c.errorArray = append(c.errorArray, err)
-			} else {
-				c.jsonData = bytes.NewReader(jsonData)
-				c.Header("Content-Type", ContentTypeJson)
-			}
-		}
-	}
-	return c
-}
-
-func (c *Client) QueryFunc(f func(c *Client) interface{}) *Client {
-	if data := f(c); data != nil {
-		c.Query(data)
-	} else {
-		c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "QueryFunc return nil"))
-	}
-	return c
 }
 
 func (c *Client) Header(k string, value interface{}) *Client {

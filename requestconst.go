@@ -9,8 +9,11 @@ import (
 )
 
 const (
-	ContentTypeJson = "application/json"
-	ContentTypeForm = "application/x-www-form-urlencoded"
+	ContentTypeJson       = "application/json"
+	ContentTypeForm       = "application/x-www-form-urlencoded"
+	ContentTypeFile       = "multipart/form-data"
+	ContentTypeFormString = "json"
+	ContentTypeJsonString = "form"
 )
 
 type Proxy struct {
@@ -30,7 +33,7 @@ type Client struct {
 	method      string
 	urlPoint    string
 	urlSite     string
-	jsonData    io.Reader
+	jsonData    []byte
 	dataForm    *url.Values
 	httpHeaders http.Header
 	httpRequest *http.Request
@@ -55,8 +58,11 @@ type HttpResultInterface interface {
 }
 
 type HttpClientInterface interface {
-	Query(data interface{}) *Client
-	QueryFunc(f func(c *Client) interface{}) *Client
+	Query(data interface{}, queryType string) *Client
+	JsonQuery(data interface{}) *Client
+	FormQuery(data interface{}) *Client
+	QueryFunc(f func(c *Client) (interface{}, string)) *Client
+	QueryResult() io.Reader
 	Headers(m map[string]interface{}) *Client
 	Header(k string, value interface{}) *Client
 	HeadersFunc(f func(c *Client)) *Client

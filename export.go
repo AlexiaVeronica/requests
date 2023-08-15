@@ -24,7 +24,7 @@ func NewClient() *Client {
 }
 
 func Get(pointPath string, params any, headers map[string]interface{}) HttpResultInterface {
-	response := NewClient().GetMethod().UrlSite(pointPath).Query(params)
+	response := NewClient().GetMethod().UrlSite(pointPath).FormQuery(params)
 	if headers != nil {
 		response.Headers(headers)
 	}
@@ -38,7 +38,12 @@ func Get(pointPath string, params any, headers map[string]interface{}) HttpResul
 }
 
 func Post(pointPath string, params any, headers map[string]interface{}) HttpResultInterface {
-	response := NewClient().PostMethod().UrlSite(pointPath).Query(params)
+	response := NewClient().PostMethod().UrlSite(pointPath)
+	if headers["Content-Type"] == ContentTypeForm {
+		response.FormQuery(params)
+	} else if headers["Content-Type"] == ContentTypeJson {
+		response.JsonQuery(params)
+	}
 	if headers != nil {
 		response.Headers(headers)
 	}
@@ -52,7 +57,12 @@ func Post(pointPath string, params any, headers map[string]interface{}) HttpResu
 }
 
 func Put(pointPath string, params any, headers map[string]interface{}) HttpResultInterface {
-	response := NewClient().PutMethod().UrlSite(pointPath).Query(params)
+	response := NewClient().PutMethod().UrlSite(pointPath)
+	if headers["Content-Type"] == ContentTypeForm {
+		response.FormQuery(params)
+	} else if headers["Content-Type"] == ContentTypeJson {
+		response.JsonQuery(params)
+	}
 	if headers != nil {
 		response.Headers(headers)
 	}
