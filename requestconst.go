@@ -24,6 +24,7 @@ type Proxy struct {
 }
 
 type Response struct {
+	Err       error
 	BodyBytes []byte
 	Body      io.ReadCloser
 	Resp      *http.Response
@@ -45,16 +46,18 @@ type Client struct {
 type HttpResultInterface interface {
 	SetDecodeFunc(func(f *Response) error) *Response
 	Bytes() []byte
+	Error() bool
 	String() string
 	Json() gjson.Result
-	Dict() map[string]interface{}
+	Map() map[string]interface{}
 	Decode(v any) error
-	DecodePrintError(v any)
 	GetCookie() []*http.Cookie
 	GetHeader() http.Header
 	GetStatusCode() int
 	Document() *goquery.Document
 	GetStatus() string
+	GetQuery() string
+	GetUrl() string
 }
 
 type HttpClientInterface interface {

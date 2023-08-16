@@ -30,11 +30,11 @@ func Get(pointPath string, params any, headers map[string]interface{}) HttpResul
 	}
 	for i := 0; i < 3; i++ {
 		result := response.NewRequest()
-		if result != nil {
+		if !result.Error() {
 			return result
 		}
 	}
-	return nil
+	return NewResponse(nil)
 }
 
 func Post(pointPath string, params any, headers map[string]interface{}) HttpResultInterface {
@@ -49,11 +49,11 @@ func Post(pointPath string, params any, headers map[string]interface{}) HttpResu
 	}
 	for i := 0; i < 3; i++ {
 		result := response.NewRequest()
-		if result != nil {
+		if !result.Error() {
 			return result
 		}
 	}
-	return nil
+	return NewResponse(nil)
 }
 
 func Put(pointPath string, params any, headers map[string]interface{}) HttpResultInterface {
@@ -68,9 +68,9 @@ func Put(pointPath string, params any, headers map[string]interface{}) HttpResul
 	}
 	for i := 0; i < 3; i++ {
 		result := response.NewRequest()
-		if result != nil {
+		if !result.Error() {
 			return result
 		}
 	}
-	return nil
+	return NewResponse(nil)
 }

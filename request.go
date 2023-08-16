@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -47,19 +48,22 @@ func (c *Client) Request() *Client {
 	c.httpRequest.Header = c.httpHeaders
 	c.httpRequest.AddCookie(c.Cookie)
 	if err != nil {
-		c.errorArray = append(c.errorArray, err)
+		log.Printf("http.NewRequest error: %v", err)
+		return &Client{httpRequest: nil}
 	}
 	return c
 }
 
 func (c *Client) Send() HttpResultInterface {
-	resp, err := c.httpClient.Do(c.httpRequest)
-	if err != nil {
-		c.errorArray = append(c.errorArray, err)
-	} else {
-		return &Response{Body: resp.Body, Resp: resp}
+	if c.httpRequest == nil {
+		return NewResponse(nil)
 	}
-	return nil
+	respClient, err := c.httpClient.Do(c.httpRequest)
+	if err != nil {
+		log.Printf("httpClient.Do error: %v", err)
+	}
+	return NewResponse(respClient)
+
 }
 
 func (c *Client) Stream() chan []byte {
@@ -92,15 +96,7 @@ func (c *Client) NewRequest() HttpResultInterface {
 			}
 		}
 	}()
-	res := c.Request().Send()
-	if res != nil {
-		return res
-	}
-	c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "send request failed"))
-	for _, errorInfo := range c.errorArray {
-		fmt.Printf("error: %s\n", errorInfo.Error())
-	}
-	return HttpResultInterface(nil)
+	return c.Request().Send()
 }
 
 func (c *Client) SetCookie(cookie map[string]string) *Client {
