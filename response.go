@@ -113,7 +113,7 @@ func (c *Response) SetDecodeFunc(f func(c *Response) error) *Response {
 }
 
 func (c *Response) Decode(v any) error {
-	if responseString := c.String(); responseString != "" {
+	if responseString := c.String(); responseString == "" {
 		return fmt.Errorf("response string is nil")
 	} else {
 		return json.NewDecoder(strings.NewReader(responseString)).Decode(v)
