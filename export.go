@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -73,4 +74,19 @@ func Put(pointPath string, params any, headers map[string]interface{}) HttpResul
 		}
 	}
 	return NewResponse(nil)
+}
+
+func GetImage(imageUrl string, headers map[string]interface{}) []byte {
+	response := NewClient().GetMethod().UrlSite(imageUrl)
+	if headers != nil {
+		response.Headers(headers)
+	}
+	for i := 0; i < 3; i++ {
+		result := response.SetRequest().Send()
+		if !result.Error() {
+			return result.Bytes()
+		}
+	}
+	log.Printf("GetImage error: %v", "Get image error")
+	return nil
 }
