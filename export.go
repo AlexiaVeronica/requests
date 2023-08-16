@@ -1,9 +1,10 @@
 package requests
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -75,8 +76,7 @@ func Put(pointPath string, params any, headers map[string]interface{}) HttpResul
 	}
 	return NewResponse(nil)
 }
-
-func GetImage(imageUrl string, headers map[string]interface{}) []byte {
+func Image(imageUrl string, headers map[string]interface{}) ([]byte, error) {
 	response := NewClient().GetMethod().UrlSite(imageUrl)
 	if headers != nil {
 		response.Headers(headers)
@@ -84,9 +84,22 @@ func GetImage(imageUrl string, headers map[string]interface{}) []byte {
 	for i := 0; i < 3; i++ {
 		result := response.SetRequest().Send()
 		if !result.Error() {
-			return result.Bytes()
+			return result.Bytes(), nil
 		}
 	}
-	log.Printf("GetImage error: %v", "Get image error")
+	return nil, fmt.Errorf("failed to get image: %s", imageUrl)
+}
+
+func NewImage(imageUrl, imagePath string, headers map[string]interface{}) error {
+	if _, ok := os.Stat(imagePath); os.IsNotExist(ok) {
+		image, err := Image(imageUrl, headers)
+		if err != nil {
+			return fmt.Errorf("failed to get image: %w", err)
+		}
+		err = os.WriteFile(imagePath, image, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write image file: %w", err)
+		}
+	}
 	return nil
 }
