@@ -9,7 +9,7 @@ import (
 )
 
 var DefaultProxyInfo *Proxy
-var DefaultCookie *http.Cookie
+var DefaultCookie []*http.Cookie
 var DefaultTimeout time.Duration = 30
 var DefaultHeaders http.Header
 

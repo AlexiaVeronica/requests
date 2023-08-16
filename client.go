@@ -18,7 +18,7 @@ type Client struct {
 	httpHeaders http.Header
 	httpRequest *http.Request
 	httpClient  http.Client
-	Cookie      *http.Cookie
+	Cookie      []*http.Cookie
 }
 
 type HttpClientInterface interface {
@@ -54,7 +54,9 @@ func (c *Client) SetRequest() HttpRequestInterface {
 		c.httpRequest, err = http.NewRequest(c.method, c.GetUrl(), c.QueryResult())
 	}
 	c.httpRequest.Header = c.httpHeaders
-	c.httpRequest.AddCookie(c.Cookie)
+	for _, v := range c.Cookie {
+		c.httpRequest.AddCookie(v)
+	}
 	if err != nil {
 		log.Printf("http.NewRequest error: %v", err)
 		return &Request{httpRequest: nil}
@@ -64,7 +66,7 @@ func (c *Client) SetRequest() HttpRequestInterface {
 
 func (c *Client) SetCookie(cookie map[string]string) *Client {
 	for k, v := range cookie {
-		c.Cookie = &http.Cookie{Name: k, Value: v}
+		c.Cookie = append(c.Cookie, &http.Cookie{Name: k, Value: v})
 	}
 	return c
 }
