@@ -8,21 +8,55 @@ import (
 	"time"
 )
 
-var DefaultProxyInfo *Proxy
-var DefaultCookie []*http.Cookie
-var DefaultTimeout time.Duration = 30
-var DefaultHeaders http.Header
+var defaultProxyInfo *Proxy
+
+func SetDefaultProxy(ip string, port string, username string, psw string) {
+	defaultProxyInfo = &Proxy{Ip: ip, Port: port, UserName: username, Password: psw}
+}
+
+var defaultCookie map[string]string
+
+func SetDefaultCookie(cookie map[string]string) {
+	defaultCookie = cookie
+}
+
+var defaultTimeout time.Duration
+
+func SetDefaultTimeout(timeout int) {
+	defaultTimeout = time.Duration(timeout)
+}
+
+var defaultHeaders http.Header
+
+func SetDefaultHeaders(headers map[string]interface{}) {
+	defaultHeaders = make(http.Header)
+	for k, v := range headers {
+		defaultHeaders.Set(k, fmt.Sprintf("%v", v))
+	}
+}
 
 func NewClient() *Client {
 	client := &Client{
 		jsonData:    nil,
-		Cookie:      DefaultCookie,
-		httpHeaders: DefaultHeaders,
+		Cookie:      make(map[string]string),
+		httpHeaders: make(http.Header),
 		dataForm:    &url.Values{},
-		httpClient:  http.Client{Transport: nil, Timeout: time.Second * DefaultTimeout},
+		httpClient:  http.Client{Timeout: time.Second * 30},
 	}
-	if DefaultProxyInfo != nil {
-		SetProxy(client, DefaultProxyInfo)
+	if defaultTimeout != 0 {
+		client.httpClient.Timeout = time.Second * defaultTimeout
+	}
+
+	if defaultHeaders != nil {
+		client.httpHeaders = defaultHeaders
+	}
+
+	if defaultCookie != nil {
+		client.SetCookie(defaultCookie)
+	}
+
+	if defaultProxyInfo != nil {
+		SetProxy(client, defaultProxyInfo)
 	}
 	return client
 }
