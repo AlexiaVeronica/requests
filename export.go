@@ -11,12 +11,13 @@ import (
 var DefaultProxyInfo *Proxy
 var DefaultCookie *http.Cookie
 var DefaultTimeout time.Duration = 30
+var DefaultHeaders http.Header
 
 func NewClient() *Client {
 	client := &Client{
 		jsonData:    nil,
 		Cookie:      DefaultCookie,
-		httpHeaders: http.Header{},
+		httpHeaders: DefaultHeaders,
 		dataForm:    &url.Values{},
 		httpClient:  http.Client{Transport: nil, Timeout: time.Second * DefaultTimeout},
 	}
