@@ -18,7 +18,7 @@ func NewClient() *Client {
 		httpClient:  http.Client{Transport: nil, Timeout: time.Second * DefaultTimeout},
 	}
 	if DefaultProxyInfo != nil {
-		return client.SetProxy(DefaultProxyInfo)
+		SetProxy(client, DefaultProxyInfo)
 	}
 	return client
 }
@@ -29,7 +29,7 @@ func Get(pointPath string, params any, headers map[string]interface{}) HttpResul
 		response.Headers(headers)
 	}
 	for i := 0; i < 3; i++ {
-		result := response.NewRequest()
+		result := response.SetRequest().Send()
 		if !result.Error() {
 			return result
 		}
@@ -48,7 +48,7 @@ func Post(pointPath string, params any, headers map[string]interface{}) HttpResu
 		response.Headers(headers)
 	}
 	for i := 0; i < 3; i++ {
-		result := response.NewRequest()
+		result := response.SetRequest().Send()
 		if !result.Error() {
 			return result
 		}
@@ -67,7 +67,7 @@ func Put(pointPath string, params any, headers map[string]interface{}) HttpResul
 		response.Headers(headers)
 	}
 	for i := 0; i < 3; i++ {
-		result := response.NewRequest()
+		result := response.SetRequest().Send()
 		if !result.Error() {
 			return result
 		}

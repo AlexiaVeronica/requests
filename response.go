@@ -11,6 +11,30 @@ import (
 	"strings"
 )
 
+type Response struct {
+	Err       error
+	BodyBytes []byte
+	Body      io.ReadCloser
+	Resp      *http.Response
+}
+
+type HttpResultInterface interface {
+	SetDecodeFunc(func(f *Response) error) *Response
+	Bytes() []byte
+	Error() bool
+	String() string
+	Json() gjson.Result
+	Map() map[string]interface{}
+	Decode(v any) error
+	GetCookie() []*http.Cookie
+	GetHeader() http.Header
+	GetStatusCode() int
+	Document() *goquery.Document
+	GetStatus() string
+	GetQuery() string
+	GetUrl() string
+}
+
 func NewResponse(resp *http.Response) HttpResultInterface {
 	res := &Response{}
 	if resp == nil {
