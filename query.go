@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"reflect"
 	"strings"
@@ -13,7 +14,7 @@ import (
 func (c *Client) getJsonByte(v interface{}) []byte {
 	jsonData, err := json.Marshal(v)
 	if err != nil {
-		c.errorArray = append(c.errorArray, err)
+		log.Printf("json.Marshal error: %v", err)
 		return nil
 	}
 	return jsonData
@@ -61,7 +62,7 @@ func (c *Client) FormQuery(data interface{}) *Client {
 	case string:
 		dataForm, err := url.ParseQuery(dataAny)
 		if err != nil {
-			c.errorArray = append(c.errorArray, err)
+			log.Printf("url.ParseQuery error: %v", err)
 		} else {
 			for k, v := range dataForm {
 				c.dataForm.Set(k, v[0])
@@ -86,7 +87,7 @@ func (c *Client) Query(data interface{}, queryType string) *Client {
 	} else if queryType == ContentTypeJsonString {
 		c.JsonQuery(data)
 	} else {
-		c.errorArray = append(c.errorArray, fmt.Errorf("query error: form and json is false"))
+		log.Printf("query error: form and json is false")
 	}
 	return c
 }
@@ -95,12 +96,12 @@ func (c *Client) QueryFunc(f func(c *Client) (interface{}, string)) *Client {
 	data, queryType := f(c)
 	if data != nil {
 		if !strings.Contains(queryType, strings.Join([]string{ContentTypeJsonString, ContentTypeFormString}, "|")) {
-			c.errorArray = append(c.errorArray, fmt.Errorf("queryType error: %s is not support", queryType))
+			log.Printf("queryType error: %s is not support", queryType)
 		} else {
 			c.Query(data, queryType)
 		}
 	} else {
-		c.errorArray = append(c.errorArray, fmt.Errorf("error: %s", "QueryFunc return nil"))
+		log.Printf("QueryFunc error: %s", "QueryFunc return nil")
 	}
 	return c
 }
