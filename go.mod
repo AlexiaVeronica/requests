@@ -1,4 +1,4 @@
-module github.com/VeronicaAlexia/requests
+module github.com/VeronicaAshford/requests
 
 go 1.20
 
